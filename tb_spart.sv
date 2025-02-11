@@ -4,7 +4,10 @@ module tb_spart(
     input rxd,
     input [7:0] rdata,
     output txd,
-    output [7:0] tdata
+    input [7:0] tdata,
+    input rx_done,
+    input start,
+    input rw
 );
 
 endmodule
