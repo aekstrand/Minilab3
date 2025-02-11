@@ -59,7 +59,7 @@ assign br_cfg = SW[9:8];
 
 // Instantiate your spart here
 spart spart0(   .clk(CLOCK_50),
-                .rst(rst),
+                .rst_n(rst),
                 .iocs(iocs),
                 .iorw(iorw),
                 .rda(rda),
@@ -72,7 +72,7 @@ spart spart0(   .clk(CLOCK_50),
 
 // Instantiate your driver here
 driver driver0( .clk(CLOCK_50),
-                .rst(rst),
+                .rst_n(rst),
                 .br_cfg(br_cfg),
                 .iocs(iocs),
                 .iorw(iorw),
