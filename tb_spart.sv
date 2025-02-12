@@ -43,13 +43,13 @@ module tb_spart(
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             count <= baud;
-            enable = 0;
+            enable <= 0;
         end else if(count === 16'h0000) begin
             count <= baud;
-            enable = 1;
+            enable <= 1;
         end else begin
             count <= count - 1;
-            enable = 0;
+            enable <= 0;
         end
     end
 
