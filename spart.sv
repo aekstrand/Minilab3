@@ -30,23 +30,20 @@ module spart(
     input  logic        rxd
 );
 
-/*
-    TODO:
-    - load databus with rx data
-    - set rda
-*/
-
 logic [7:0] tx_buffer, rx_buffer;
 logic [15:0] db_buffer;
 logic [3:0] tx_count, rx_count;
 logic       trx_en;
 logic       transmitting;
+logic reset_rda, set_rda;
 int         baud_count;
 
 typedef enum logic[1:0]{IDLE, TX_START, TX, RX} state_t;
 state_t state, nxt_state;
 
 assign load_tx_buf = (ioaddr == 2'b00) && !iorw && iocs;
+assign databus = ((ioaddr == 2'b00) && iorw && iocs) ? rx_buffer : 8'bzzzzzzzz;
+assign reset_rda = (ioaddr == 2'b00) && iorw && iocs;
 
 // Transmit buffer
 always_comb begin
@@ -106,7 +103,7 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
     else if (trx_en && state == RX) begin
         rx_count <= rx_count + 1'b1;
-        rx_buffer <= {rx_buffer[6:0], rxd};
+        rx_buffer <= {rxd, rx_buffer[7:1]};
     end
     else if (state == RX) begin
         rx_count <= rx_count;
@@ -134,6 +131,19 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
+// rda set-reset
+always_ff @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        rda <= 0;
+    end else if(set_rda) begin
+        rda <= 1;
+    end else if(reset_rda) begin
+        rda <= 0;
+    end else begin
+        rda <= rda;
+    end
+end
+
 
 /////////////////////// Control FSM ///////////////////////
 
@@ -146,7 +156,7 @@ always_ff @(posedge clk or negedge rst_n)
 always_comb begin
     nxt_state = state;
     transmitting = 1'b0;
-    rda = 1'b0;
+    set_rda = 1'b0;
     tbr = 1'b0;
 
     case(state)
@@ -168,8 +178,10 @@ always_comb begin
                 nxt_state = IDLE;
         end
         RX : begin
-            if (rx_count == 7 & trx_en)
+            if (rx_count == 7 & trx_en) begin
                 nxt_state = IDLE;
+                set_rda = 1'b1;
+            end
         end
         default : nxt_state = IDLE;
     endcase

@@ -32,10 +32,10 @@ module driver(
     typedef enum logic [1:0] {LOAD_LOWER_BAUD, LOAD_HIGHER_BAUD, READ, WRITE} state_t;
     state_t state, next_state;
 
-    localparam BAUD_4800 = 16'd4800;
-    localparam BAUD_9600 = 16'd9600;
-    localparam BAUD_19200 = 16'd19200;
-    localparam BAUD_38400 = 16'd38400;
+    localparam BAUD_4800 = 16'd10418;
+    localparam BAUD_9600 = 16'd5208;
+    localparam BAUD_19200 = 16'd2604;
+    localparam BAUD_38400 = 16'd1302;
 
     logic [7:0] stored_data;
     logic store_data, send_baud, send_data;
@@ -111,11 +111,13 @@ module driver(
                 ioaddr = 2'b11;
                 send_baud = 1'b1;
                 send_data = 1'b1;
+                next_state = READ;
             end
             default: begin // LOAD_LOWER_BAUD
                 iocs = 1'b1;
                 ioaddr = 2'b10;
                 send_baud = 1'b1;
+                next_state = LOAD_HIGHER_BAUD;
             end
         endcase
     end
